@@ -1,6 +1,6 @@
 /**
  * @name ThinkFastChuckleNuts
- * @version 1.0.4
+ * @version 1.0.5
  * @source "https://github.com/Dylusion/ThinkFastChuckleNuts"
 */
 const request = require("request");
@@ -19,7 +19,7 @@ const config = {
         ],
     github_raw:
       "https://raw.githubusercontent.com/Dylusion/ThinkFastChuckleNuts/main/tfcn.plugin.js",
-    version: "1.0.4",
+    version: "1.0.5",
     description:
       "Adds flashbang effect every time a notification is received",
 	},
@@ -30,6 +30,7 @@ const config = {
       "items": [
         "Added flashbang effect duration slider",
         "Fixed flashbang effect still showing while on DND",
+        "Fixed some elements showing above flashbang effect",
       ]
     }
   ],
@@ -180,10 +181,9 @@ module.exports = !global.ZeresPluginLibrary
           const channel = ZeresPluginLibrary.DiscordModules.ChannelStore.getChannel(message.channel_id);
           if (!this.supposedToNotify(message, channel)) return;
           if (!this.checkSettings(message, channel)) return;
-	  const isDnd =
-            UserStatusStore.getStatus(UserStore.getCurrentUser().id) === "dnd";
-	  // temp fix
-	  if (isDnd) return;
+	        const isDnd = UserStatusStore.getStatus(UserStore.getCurrentUser().id) === "dnd";
+	        // temp fix
+	        if (isDnd) return;
           console.log(message.content)
           console.log(ZeresPluginLibrary.DiscordModules.ElectronModule.getDiscordUtils())
 
@@ -196,6 +196,7 @@ module.exports = !global.ZeresPluginLibrary
             bottom: 0px;
             right: 0px;
             left: 0px;
+            z-index: 1000;
             background: #ffffff;
            
             animation-iteration-count: 1;
@@ -260,9 +261,11 @@ module.exports = !global.ZeresPluginLibrary
           const isDnd =
             UserStatusStore.getStatus(UserStore.getCurrentUser().id) === "dnd";
 
+          /*
           if (dontDisableOnDnd) {
             shouldNotify = isDnd;
           }
+          */
 
           if (ignoreDMs) {
             if (channel.type === ChannelTypes["DM"]) shouldNotify = false;
