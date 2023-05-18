@@ -179,6 +179,10 @@ module.exports = !global.ZeresPluginLibrary
           const channel = ZeresPluginLibrary.DiscordModules.ChannelStore.getChannel(message.channel_id);
           if (!this.supposedToNotify(message, channel)) return;
           if (!this.checkSettings(message, channel)) return;
+	  const isDnd =
+            UserStatusStore.getStatus(UserStore.getCurrentUser().id) === "dnd";
+	  // temp fix
+	  if (isDnd) return;
           console.log(message.content)
           console.log(ZeresPluginLibrary.DiscordModules.ElectronModule.getDiscordUtils())
 
@@ -251,6 +255,7 @@ module.exports = !global.ZeresPluginLibrary
           const ignoreDMGroups = this.settings.ignoreDMGroups;
 
           const dontDisableOnDnd = this.settings.disableOnDnd;
+	 // fix later
           const isDnd =
             UserStatusStore.getStatus(UserStore.getCurrentUser().id) === "dnd";
 
