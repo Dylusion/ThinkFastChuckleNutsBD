@@ -18,7 +18,7 @@ const config = {
             }
         ],
     github_raw:
-      "",
+      "https://raw.githubusercontent.com/Dylusion/ThinkFastChuckleNuts/main/tfcn.plugin.js",
     version: "1.0.3",
     description:
       "Adds flashbang effect every time a notification is received",
@@ -100,7 +100,7 @@ module.exports = !global.ZeresPluginLibrary
       load() {
         BdApi.showConfirmationModal(
           "Library plugin is needed",
-          `The library plugin needed for AQWERT'sPluginBuilder is missing. Please click Download Now to install it.`,
+          `The library plugin needed for this plugin is missing. Please click Download Now to install it.`,
           {
             confirmText: "Download",
             cancelText: "Cancel",
@@ -132,38 +132,19 @@ module.exports = !global.ZeresPluginLibrary
       const {
         DiscordModules,
         WebpackModules,
-        PluginUtilities,
-        Settings,
         Patcher,
       } = Library;
 
       const {
-        React,
-        ReactDOM,
         Dispatcher,
         UserStore,
-        ChannelStore,
-        GuildStore,
-        NavigationUtils,
         UserStatusStore,
-        SelectedChannelStore,
-        GuildMemberStore,
-        // UserProfileModals,
-        InviteActions,
       } = DiscordModules;
       const { Webpack } = BdApi;
 
       const ChannelTypes = Webpack.getModule(Webpack.Filters.byProps("GUILD_TEXT"), { searchExports: true });
       const MuteStore = WebpackModules.getByProps("isSuppressEveryoneEnabled");
       const isMentioned = { isRawMessageMentioned: WebpackModules.getModule(Webpack.Filters.byStrings("rawMessage", "suppressEveryone"), {searchExports: true}) };
-
-      const classes = {
-        ...WebpackModules.getByProps("horizontal", "flex", "justifyStart"),
-        ...WebpackModules.getByProps("avatar", "alt"),
-      };
-      /* Created by Strencher */
-      const Spring = WebpackModules.getModule(e => e.useSpring);
-      const { useSpring, animated } = Spring;
 
       class plugin extends Plugin {
         constructor() {
@@ -172,34 +153,6 @@ module.exports = !global.ZeresPluginLibrary
           this.getSettingsPanel = () => {
             return this.buildSettingsPanel().getElement();
           };
-
-          try {
-            // QWERTLib.Toasts.create(["Successfully started ", React.createElement("strong", null, "In App Notifications"), "!"], {
-            //     author: "QWERT Library",
-            //     color: colors.online,
-            //     icon: React.createElement(WebpackModules.findByDisplayName("Checkmark"), {
-            //         style: {
-            //             color: colors.online
-            //         }
-            //     }),
-            //     time: 6000,
-            //     onClick: () => {
-            //         InviteActions.acceptInviteAndTransitionToInviteChannel("zMnHFAKsu3");
-            //     }
-            // })
-          } catch (e) {
-            console.log(
-              `%c[InAppNotifications]%c Error!%c`,
-              "color: #3a71c1;",
-              "font-weight: 700; color: #b3001b;",
-              "\n",
-              e
-            );
-            BdApi.alert(
-              "InAppNotifications",
-              "There was an error while trying to start the plugin.\n Try checking the console for any errors from this plugin.\nFor any further support, join my support server (https://discord.gg/zJbXFXNAhJ)"
-            );
-          }
 
           const om = this.onMessage.bind(this);
           this.onMessage = (e) => {
@@ -267,10 +220,6 @@ module.exports = !global.ZeresPluginLibrary
 
         }//----------------
 
-        escapeRegex(string) {
-          return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-        }
-
         supposedToNotify(message, channel) {
           if (message.author.id === UserStore.getCurrentUser().id) return false;
           if (channel.type === ChannelTypes["PUBLIC_THREAD"] && !channel.member) return false;
@@ -304,15 +253,9 @@ module.exports = !global.ZeresPluginLibrary
           const dontDisableOnDnd = this.settings.disableOnDnd;
           const isDnd =
             UserStatusStore.getStatus(UserStore.getCurrentUser().id) === "dnd";
-          const disableIfNoFocus = this.settings.disableIfNoFocus;
-          const hasFocus = document.hasFocus();
 
           if (dontDisableOnDnd) {
             shouldNotify = isDnd;
-          }
-
-          if (disableIfNoFocus) {
-            if (!hasFocus) shouldNotify = false;
           }
 
           if (ignoreDMs) {
@@ -332,7 +275,6 @@ module.exports = !global.ZeresPluginLibrary
 
         onStop() {
           Dispatcher.unsubscribe("MESSAGE_CREATE", this.onMessage);
-          Patcher.unpatchAll();
         }
       }
 
