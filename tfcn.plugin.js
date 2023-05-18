@@ -1,6 +1,6 @@
 /**
  * @name ThinkFastChuckleNuts
- * @version 1.0.3
+ * @version 1.0.4
  * @source "https://github.com/Dylusion/ThinkFastChuckleNuts"
 */
 const request = require("request");
@@ -19,7 +19,7 @@ const config = {
         ],
     github_raw:
       "https://raw.githubusercontent.com/Dylusion/ThinkFastChuckleNuts/main/tfcn.plugin.js",
-    version: "1.0.3",
+    version: "1.0.4",
     description:
       "Adds flashbang effect every time a notification is received",
 	},
@@ -29,6 +29,7 @@ const config = {
       "type": "update",
       "items": [
         "Added flashbang effect duration slider",
+        "Fixed flashbang effect still showing while on DND",
       ]
     }
   ],
