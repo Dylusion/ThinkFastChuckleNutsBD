@@ -1,6 +1,6 @@
 /**
  * @name ThinkFastChuckleNuts
- * @version 1.0.5
+ * @version 1.0.6
  * @source "https://github.com/Dylusion/ThinkFastChuckleNuts"
 */
 const request = require("request");
@@ -19,7 +19,7 @@ const config = {
         ],
     github_raw:
       "https://raw.githubusercontent.com/Dylusion/ThinkFastChuckleNuts/main/tfcn.plugin.js",
-    version: "1.0.5",
+    version: "1.0.6",
     description:
       "Adds flashbang effect every time a notification is received",
 	},
@@ -46,7 +46,7 @@ const config = {
       markers: [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0],
       stickToMarkers: true,
     },
-    /*
+    /* temporarily disable, fix in v1.0.7
     {
       type: "switch",
       name: "Enable on Do Not Disturb",
@@ -102,7 +102,7 @@ module.exports = !global.ZeresPluginLibrary
       load() {
         BdApi.showConfirmationModal(
           "Library plugin is needed",
-          `The library plugin needed for this plugin is missing. Please click Download Now to install it.`,
+          `The library plugin needed for Think Fast Chuckle Nuts is missing. Please install it below.`,
           {
             confirmText: "Download",
             cancelText: "Cancel",
@@ -144,9 +144,9 @@ module.exports = !global.ZeresPluginLibrary
       } = DiscordModules;
       const { Webpack } = BdApi;
 
-      const ChannelTypes = Webpack.getModule(Webpack.Filters.byProps("GUILD_TEXT"), { searchExports: true });
       const MuteStore = WebpackModules.getByProps("isSuppressEveryoneEnabled");
-      const isMentioned = { isRawMessageMentioned: WebpackModules.getModule(Webpack.Filters.byStrings("rawMessage", "suppressEveryone"), {searchExports: true}) };
+      const ChannelTypes = Webpack.getModule(Webpack.Filters.byProps("GUILD_TEXT"), { searchExports: true });
+      const Mentioned = { isRawMessageMentioned: WebpackModules.getModule(Webpack.Filters.byStrings("rawMessage", "suppressEveryone"), {searchExports: true}) };
 
       class plugin extends Plugin {
         constructor() {
@@ -156,8 +156,8 @@ module.exports = !global.ZeresPluginLibrary
             return this.buildSettingsPanel().getElement();
           };
 
-          const om = this.onMessage.bind(this);
-          this.onMessage = (e) => {
+          const om = this.message.bind(this);
+          this.message = (e) => {
             try {
               om(e);
             } catch (e) {
@@ -173,19 +173,17 @@ module.exports = !global.ZeresPluginLibrary
         }
 
         onStart() {
-          Dispatcher.subscribe("MESSAGE_CREATE", this.onMessage);
+          Dispatcher.subscribe("MESSAGE_CREATE", this.message);
         }
 
 
-        onMessage({ message }) {
+        message({ message }) {
           const channel = ZeresPluginLibrary.DiscordModules.ChannelStore.getChannel(message.channel_id);
-          if (!this.supposedToNotify(message, channel)) return;
-          if (!this.checkSettings(message, channel)) return;
-	        const isDnd = UserStatusStore.getStatus(UserStore.getCurrentUser().id) === "dnd";
-	        // temp fix
-	        if (isDnd) return;
-          console.log(message.content)
-          console.log(ZeresPluginLibrary.DiscordModules.ElectronModule.getDiscordUtils())
+          if (!this.notify(message, channel)) return;
+          if (!this.getSettings(message, channel)) return;
+		// temp fix
+	        const dnd = UserStatusStore.getStatus(UserStore.getCurrentUser().id) === "dnd";
+	        if (dnd) return;
 
           const flashTime = this.settings.flashTime;
 
@@ -226,7 +224,7 @@ module.exports = !global.ZeresPluginLibrary
 
         }//----------------
 
-        supposedToNotify(message, channel) {
+        notify(message, channel) {
           if (message.author.id === UserStore.getCurrentUser().id) return false;
           if (channel.type === ChannelTypes["PUBLIC_THREAD"] && !channel.member) return false;
           const suppressEveryone = MuteStore.isSuppressEveryoneEnabled(
@@ -246,8 +244,8 @@ module.exports = !global.ZeresPluginLibrary
           );
         }
 
-        checkSettings(message, channel) {
-          let shouldNotify = true;
+        getSettings(message, channel) {
+          let willNotify = true;
           const ignoredUsers = this.settings.ignoredUsers.trim().split(",");
           const ignoredServers = this.settings.ignoredServers.trim().split(",");
           const ignoredChannels = this.settings.ignoredChannels
@@ -263,23 +261,23 @@ module.exports = !global.ZeresPluginLibrary
 
           /*
           if (dontDisableOnDnd) {
-            shouldNotify = isDnd;
+            willNotify = isDnd;
           }
           */
 
           if (ignoreDMs) {
-            if (channel.type === ChannelTypes["DM"]) shouldNotify = false;
+            if (channel.type === ChannelTypes["DM"]) willNotify = false;
           }
 
           if (ignoreDMGroups) {
-            if (channel.type === ChannelTypes["GROUP_DM"]) shouldNotify = false;
+            if (channel.type === ChannelTypes["GROUP_DM"]) willNotify = false;
           }
 
-          if (ignoredUsers.includes(message.author.id)) shouldNotify = false;
-          if (ignoredServers.includes(channel.guild_id)) shouldNotify = false;
-          if (ignoredChannels.includes(channel.id)) shouldNotify = false;
+          if (ignoredUsers.includes(message.author.id)) willNotify = false;
+          if (ignoredServers.includes(channel.guild_id)) willNotify = false;
+          if (ignoredChannels.includes(channel.id)) willNotify = false;
 
-          return shouldNotify;
+          return willNotify;
         }
 
         onStop() {
