@@ -5,7 +5,7 @@ A BetterDiscord Plugin that adds a bright flash of light every time you get a no
 Tired of boring Discord notifications? Not annoying you enough? 
 You better think fast chuckle nuts, because every time that annoying mod DMs you about server indecency, you'll be served with a flashbang
 
-Made this for fun in my spare time, it's basically a shitpost plugin.
+Made this for fun in my spare time, it's kind of a sh^tpost plugin, up to you to interpret.
 
 Configurable Options:
 - Flash Duration; How long the flash will stay on your screen before dissipating
